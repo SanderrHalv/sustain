@@ -1,40 +1,44 @@
 # Evidence Summary — WSG 3.8 Defer Non-Critical Resources
 
 ## Broken Version (http://localhost:8000)
-- **Performance Score:** 54
-- **First Contentful Paint (FCP):** 14.8s 
-- **Largest Contentful Paint (LCP):** 15.0s 
-- **Total Blocking Time (TBT):** 100ms 
-- **Speed Index:** 45.4s 
-- **Cumulative Layout Shift (CLS):** 0 
+- *Performance Score:* 54  
+- *First Contentful Paint (FCP):*
+*14.8 s*  
+- *Largest Contentful Paint (LCP):*
+*14.8 s*  
+- *Total Blocking Time (TBT):*
+*100 ms*  
+- *Speed Index:*
+*14.8 s*  
+- *Cumulative Layout Shift (CLS):* 0  
 
-Notes:  
-- Scripts blocked rendering until after heavy images loaded.  
-- Content was delayed, but scripts themselves did not contribute to TBT.  
+*Notes:*  
+- Render-blocking scripts delayed visible content until after heavy images loaded.  
+- Scripts themselves were not CPU-heavy, so TBT stayed low.  
 
 ---
 
 ## Fixed Version (http://localhost:8001)
-- **Performance Score:** 39
-- **First Contentful Paint (FCP):** 0.6s 
-- **Largest Contentful Paint (LCP):** 15.0s 
-- **Total Blocking Time (TBT):** 13,910ms 
-- **Speed Index:** 6.6s 
-- **Cumulative Layout Shift (CLS):** 0 
+- *Performance Score:* 39  
+- *First Contentful Paint (FCP):*
+*0.8 s*  
+- *Largest Contentful Paint (LCP):*
+*1.0 s*  
+- *Total Blocking Time (TBT):*
+*13 910 ms*  
+- *Speed Index:*
+*0.9 s*  
+- *Cumulative Layout Shift (CLS):* 0  
 
-Notes:  
-- Content appeared quickly, but deferred scripts still contained blocking code, causing massive TBT.  
-- This shows why deferring is not enough, scripts must also be non-blocking (async or optimized).  
+*Notes:*  
+- Main content appeared almost instantly thanks to deferred script loading and lazy-loaded images.  
+- However, the deferred scripts still contained *blocking `while`-loop logic* that monopolised the main thread → *massive TBT* and lower performance score.
 
 ---
 
 ## Comparison
-- **Broken:** Slow first render (FCP), but low blocking.  
-- **Fixed:** Fast first render (FCP), but very high blocking due to script logic.  
-- **Lesson:** To truly “defer non-critical resources,” scripts must both load late and avoid blocking the main thread. Lazy-loading images worked as intended.  
-
----
-
-## Next Steps (for presentation)
-- Update the fixed demo scripts to use `setTimeout` (async simulation) instead of `while` loops.  
-- Re-run Lighthouse → expect **better performance scores on Fixed vs Broken**, proving the benefit of deferring + lazy-loading.
+- *Broken:* very *slow first render* (FCP/LCP) but *low CPU blocking*.  
+- *Fixed:*
+*fast initial render* (FCP/LCP) but *huge CPU blocking* caused by script logic.  
+- *Lesson:* Deferring scripts improves initial paint but is not enough — *scripts must also be non-blocking* (e.g. use async, break up heavy loops, or schedule work off-thread).  
+- Lazy-loading of images worked as intended in both versions.
